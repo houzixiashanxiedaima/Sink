@@ -54,7 +54,7 @@ Also configure Pages Build / Wrangler authentication for the Production environm
 
 | Authentication variable | Type             | What to put                                                                                                                                                                                                  |
 | ----------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `CLOUDFLARE_API_TOKEN`  | Encrypted secret | Token used by the `postbuild` remote D1 migration. Git builds need at least **Account → D1 → Edit**. If the same token runs `pnpm deploy:pages` externally, also grant **Account → Cloudflare Pages → Edit** |
+| `CLOUDFLARE_API_TOKEN`  | Encrypted secret | Token only needed for CLI deploys and manual D1 migrations (`pnpm deploy:pages`, `pnpm db:migrate:remote`), with **Account → D1 → Edit** and **Account → Cloudflare Pages → Edit**. Git builds do not migrate or deploy, so they do not need it |
 | `CLOUDFLARE_ACCOUNT_ID` | Variable         | Cloudflare account ID. Wrangler defines it as optional, but this project does not set `account_id`, so configure it for stable non-interactive builds                                                        |
 
 `CLOUDFLARE_ACCOUNT_ID` may have the same value as `NUXT_CF_ACCOUNT_ID`, but both variable names must be set separately. Preview builds skip the migration, so these authentication variables are not needed in the Preview environment.
@@ -71,7 +71,7 @@ How to create the analytics token: Cloudflare dashboard → profile icon → **M
 
 Pages exposes this dashboard variable set to both build and runtime, but each group has a distinct role: `DEPLOY_*` values generate deployment configuration, `CLOUDFLARE_*` values authenticate Wrangler, and `NUXT_*` values configure the running application. For Pages, add R2 only under **Bindings**; do not add R2 `DEPLOY_*` variables. More options: [configuration](/configuration/).
 
-The repository's `postbuild` script runs the remote D1 migration only when Pages builds the `master` branch (`CF_PAGES=1` and `CF_PAGES_BRANCH=master`). Therefore, a successful main-branch Pages build updates the D1 schema automatically; preview-branch builds do not.
+Git builds do not run remote D1 migrations. Apply schema changes before deploying with `pnpm db:migrate:remote` (it also generates `wrangler.deploy.jsonc` from the `DEPLOY_*` values). Preview builds never migrate.
 
 ## 4. Deploy and first use
 

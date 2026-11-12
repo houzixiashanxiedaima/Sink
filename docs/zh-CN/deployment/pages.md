@@ -54,7 +54,7 @@ description: 通过 Git 集成和仪表盘管理的绑定将 Sink 部署到 Clou
 
 | 鉴权变量                | 类型     | 填什么                                                                                                                                                                 |
 | ----------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `CLOUDFLARE_API_TOKEN`  | 加密密钥 | `postbuild` 远程 D1 迁移使用的令牌。Git 构建最低需要 **Account → D1 → Edit**；若在外部使用同一令牌执行 `pnpm deploy:pages`，还需 **Account → Cloudflare Pages → Edit** |
+| `CLOUDFLARE_API_TOKEN`  | 加密密钥 | 仅命令行部署与手动 D1 迁移（`pnpm deploy:pages`、`pnpm db:migrate:remote`）使用，需要 **Account → D1 → Edit** 和 **Account → Cloudflare Pages → Edit**。Git 构建不再迁移或部署，因此不需要它 |
 | `CLOUDFLARE_ACCOUNT_ID` | 变量     | Cloudflare 账户 ID。Wrangler 官方将其定义为可选，但本项目未配置 `account_id`，因此建议设置，以保证非交互构建稳定                                                       |
 
 `CLOUDFLARE_ACCOUNT_ID` 可以与 `NUXT_CF_ACCOUNT_ID` 使用相同的值，但两个变量名必须分别设置。预览构建会跳过迁移，因此 Preview 环境不需要这两个鉴权变量。
@@ -71,7 +71,7 @@ description: 通过 Git 集成和仪表盘管理的绑定将 Sink 部署到 Clou
 
 Pages 会把仪表盘中的这套变量同时提供给构建和运行环境，但各组用途不同：`DEPLOY_*` 值用于生成部署配置，`CLOUDFLARE_*` 值用于 Wrangler 鉴权，`NUXT_*` 值用于配置运行中的应用。Pages 的 R2 只能在 **Bindings** 中添加，不要添加 R2 `DEPLOY_*` 变量。更多选项见[配置参考](/zh-CN/configuration/)。
 
-仓库的 `postbuild` 脚本仅在 Pages 构建 `master` 分支时（`CF_PAGES=1` 且 `CF_PAGES_BRANCH=master`）执行远程 D1 迁移。因此，Pages 主分支构建成功时会自动更新 D1 数据库结构；预览分支构建不会迁移。
+Git 构建不执行远程 D1 迁移。部署前先运行 `pnpm db:migrate:remote`（同时会用 `DEPLOY_*` 值生成 `wrangler.deploy.jsonc`）更新表结构；预览构建从不迁移。
 
 ## 4. 部署并首次使用
 
